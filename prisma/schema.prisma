@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?
+  image         String?
+  role          String    @default("USER")
+  stripeCustomerId String?
+  subscription  Subscription?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("sr_users")
+}
+
+model Subscription {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripePriceId String
+  stripeSubId   String
+  status        String    @default("ACTIVE")
+  currentPeriodEnd DateTime
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("sr_subscriptions")
+}
+
+model Skit {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  thumbnailUrl  String
+  videoUrl      String
+  previewUrl    String?
+  duration      Int       @default(30)
+  category      String    @default("comedy")
+  isPremium     Boolean   @default(false)
+  likes         Int       @default(0)
+  views         Int       @default(0)
+  creatorId     String
+  creator       Creator   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([category])
+  @@index([createdAt])
+  @@map("sr_skits")
+}
+
+model Creator {
+  id            String    @id @default(cuid())
+  name          String
+  avatar        String?
+  bio           String?
+  followers     Int       @default(0)
+  skits         Skit[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("sr_creators")
+}
+
+model Like {
+  id        String  @id @default(cuid())
+  userId    String
+  skitId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, skitId])
+  @@map("sr_likes")
+}
+
+model Category {
+  id    String @id @default(cuid())
+  name  String @unique
+  slug  String @unique
+  icon  String?
+
+  @@map("sr_categories")
+}
