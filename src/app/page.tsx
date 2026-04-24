@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
-// AI-generated skit "videos" — each has a sequence of frames (emoji animations + text)
 const SKITS = [
   { id: "1", title: "When the WiFi drops mid-Zoom", creator: "AI Comedy Lab", emoji: "🤣", category: "comedy", isPremium: false,
     frames: [
@@ -104,7 +103,7 @@ const SKITS = [
       { emoji: "🧑😭", text: "You're right", delay: 1500 },
       { emoji: "🐈‍⬛😴", text: "*falls asleep on your phone*", delay: 2500 },
     ]},
-  { id: "10", title: "The group chat when someone says 'who's paying?'", creator: "SkitBot", emoji: "💰", category: "relatable", isPremium: false,
+  { id: "10", title: "Group chat: who's paying?", creator: "SkitBot", emoji: "💰", category: "relatable", isPremium: false,
     frames: [
       { emoji: "🧑", text: "Who's paying for dinner?", delay: 2000 },
       { emoji: "👥", text: "...", delay: 2000 },
@@ -127,73 +126,56 @@ const CATEGORIES = [
 function SkitPlayer({ skit, onClose }: { skit: typeof SKITS[0]; onClose: () => void }) {
   const [frameIndex, setFrameIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-  const frame = skit.frames[frameIndex];
+  const frame = skit.frames[Math.min(frameIndex, skit.frames.length - 1)];
+  const isFinished = frameIndex >= skit.frames.length;
+  const progress = ((Math.min(frameIndex + 1, skit.frames.length)) / skit.frames.length) * 100;
 
   useEffect(() => {
-    if (!isPlaying) return;
-    if (frameIndex >= skit.frames.length) {
-      setIsPlaying(false);
-      return;
-    }
-    const timer = setTimeout(() => {
-      setFrameIndex((prev) => prev + 1);
-    }, skit.frames[frameIndex].delay);
+    if (!isPlaying || isFinished) return;
+    const timer = setTimeout(() => setFrameIndex((i) => i + 1), skit.frames[frameIndex].delay);
     return () => clearTimeout(timer);
-  }, [frameIndex, isPlaying, skit]);
-
-  const progress = ((frameIndex + 1) / skit.frames.length) * 100;
-  const isFinished = frameIndex >= skit.frames.length;
+  }, [frameIndex, isPlaying, isFinished, skit]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center" onClick={onClose}>
-      {/* Close button */}
-      <button onClick={onClose} className="absolute top-6 right-6 text-white/60 hover:text-white text-2xl z-10">✕</button>
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, background: "#000", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+      <button onClick={onClose} style={{ position: "absolute", top: 24, right: 24, background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 28, cursor: "pointer" }}>✕</button>
 
-      {/* Video area */}
-      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-lg px-8" onClick={(e) => e.stopPropagation()}>
-        {/* Title */}
-        <p className="text-white font-bold text-lg text-center mb-8">{skit.title}</p>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", maxWidth: 480, padding: "0 24px" }}>
+        <p style={{ color: "#fff", fontWeight: 700, fontSize: 18, textAlign: "center", marginBottom: 32 }}>{skit.title}</p>
 
-        {/* Main frame */}
-        <div className="w-full aspect-square rounded-3xl flex items-center justify-center relative" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(236,72,153,0.15))" }}>
+        <div style={{ width: "100%", aspectRatio: "1/1", borderRadius: 24, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(236,72,153,0.15))" }}>
           {isFinished ? (
-            <div className="text-center">
-              <span className="text-7xl block mb-4">😂</span>
-              <p className="text-white font-bold text-xl">The End</p>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 72, marginBottom: 16 }}>😂</div>
+              <p style={{ color: "#fff", fontWeight: 700, fontSize: 22 }}>The End</p>
             </div>
           ) : (
-            <div className="text-center">
-              <span className="text-7xl block mb-6 animate-bounce" key={frameIndex}>{frame.emoji}</span>
-              <p className="text-white text-xl font-semibold px-4 leading-relaxed" key={`text-${frameIndex}`} style={{ animation: "fadeIn 0.3s ease-in" }}>{frame.text}</p>
+            <div style={{ textAlign: "center", padding: 24 }}>
+              <div style={{ fontSize: 72, marginBottom: 24 }}>{frame.emoji}</div>
+              <p style={{ color: "#fff", fontSize: 20, fontWeight: 600, lineHeight: 1.4 }}>{frame.text}</p>
             </div>
           )}
         </div>
 
-        {/* Controls */}
-        <div className="w-full mt-6 flex items-center gap-4">
-          <button onClick={(e) => { e.stopPropagation(); setFrameIndex(0); setIsPlaying(true); }} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">↺</button>
-          <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: "linear-gradient(135deg, #8b5cf6, #ec4899)" }} />
+        <div style={{ width: "100%", marginTop: 24, display: "flex", alignItems: "center", gap: 16 }}>
+          <button onClick={() => { setFrameIndex(0); setIsPlaying(true); }} style={{ width: 40, height: 40, borderRadius: 20, background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", fontSize: 18, cursor: "pointer" }}>↺</button>
+          <div style={{ flex: 1, height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 3, overflow: "hidden" }}>
+            <div style={{ height: "100%", borderRadius: 3, transition: "width 0.3s", width: `${progress}%`, background: "linear-gradient(135deg, #8b5cf6, #ec4899)" }} />
           </div>
-          <span className="text-xs text-white/40">{Math.min(frameIndex + 1, skit.frames.length)}/{skit.frames.length}</span>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{Math.min(frameIndex + 1, skit.frames.length)}/{skit.frames.length}</span>
         </div>
 
-        {/* Creator + actions */}
-        <div className="w-full mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)" }}>{skit.creator.charAt(0)}</div>
-            <span className="text-sm text-white/60">{skit.creator}</span>
+        <div style={{ width: "100%", marginTop: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, background: "linear-gradient(135deg, #8b5cf6, #ec4899)", color: "#fff" }}>{skit.creator.charAt(0)}</div>
+            <span style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>{skit.creator}</span>
           </div>
-          <div className="flex items-center gap-4">
-            <button className="text-lg hover:scale-110 transition">❤️</button>
-            <button className="text-lg hover:scale-110 transition">↗️</button>
+          <div style={{ display: "flex", gap: 16 }}>
+            <button style={{ background: "none", border: "none", fontSize: 20 }}>❤️</button>
+            <button style={{ background: "none", border: "none", fontSize: 20 }}>↗️</button>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
     </div>
   );
 }
@@ -205,65 +187,70 @@ export default function Home() {
   const filtered = selectedCategory === "all" ? SKITS : SKITS.filter((s) => s.category === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", color: "#fff" }}>
       {/* Nav */}
-      <nav className="sticky top-0 z-40 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-black" style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)" }}>S</div>
-            <span className="font-extrabold text-xl gradient-text">ShortReels</span>
+      <nav style={{ position: "sticky", top: 0, zIndex: 40, background: "rgba(10,10,10,0.9)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 900, background: "linear-gradient(135deg, #8b5cf6, #ec4899)", color: "#fff" }}>S</div>
+            <span style={{ fontWeight: 800, fontSize: 20, background: "linear-gradient(135deg, #8b5cf6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>ShortReels</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm font-semibold text-gray-400 hover:text-white transition px-4 py-2">Log in</Link>
-            <Link href="/register" className="btn-brand !py-2.5 !px-5 !text-sm !rounded-full">Get Started</Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Link href="/login" style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.5)", padding: "8px 16px" }}>Log in</Link>
+            <Link href="/register" style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)", color: "#fff", padding: "10px 20px", borderRadius: 20, fontSize: 14, fontWeight: 700 }}>Get Started</Link>
           </div>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="py-16 px-6 text-center relative overflow-hidden">
-        <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.15) 0%, transparent 60%)" }} />
-        <div className="relative z-10 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-gray-400 mb-6">
-            <span className="w-2 h-2 bg-pink-500 rounded-full animate-pulse" /> Click any skit to watch it play!
+      <section style={{ padding: "80px 24px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.15) 0%, transparent 60%)" }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 720, margin: "0 auto" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 16px", borderRadius: 20, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", fontSize: 14, color: "rgba(255,255,255,0.5)", marginBottom: 24 }}>
+            <span style={{ width: 8, height: 8, background: "#ec4899", borderRadius: "50%" }} /> Click any skit to watch!
           </div>
-          <h1 className="text-4xl md:text-6xl font-black leading-tight mb-6">
-            AI Skits You <span className="gradient-text">Can't Stop</span> Watching
+          <h1 style={{ fontSize: 48, fontWeight: 900, lineHeight: 1.1, marginBottom: 20 }}>
+            AI Skits You <span style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Can&apos;t Stop</span> Watching
           </h1>
-          <p className="text-lg text-gray-400 mb-8 max-w-xl mx-auto">
-            Hilarious animated skits generated by AI. Click to watch. New ones every day.
-          </p>
-          <a href="#feed" className="btn-brand !py-3.5 !px-8 !rounded-full !text-base inline-block" style={{ boxShadow: "0 4px 20px rgba(139,92,246,0.4)" }}>Watch Now — It's Free</a>
+          <p style={{ fontSize: 18, color: "rgba(255,255,255,0.5)", marginBottom: 32, maxWidth: 480, margin: "0 auto 32px" }}>Hilarious animated skits generated by AI. Click to watch. New ones every day.</p>
+          <a href="#feed" style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)", color: "#fff", padding: "14px 32px", borderRadius: 28, fontWeight: 700, fontSize: 16, display: "inline-block", boxShadow: "0 4px 20px rgba(139,92,246,0.4)", textDecoration: "none" }}>Watch Now — Free</a>
         </div>
       </section>
 
       {/* Feed */}
-      <section id="feed" className="px-6 pb-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
+      <section id="feed" style={{ padding: "0 24px 80px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          {/* Categories */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 32, overflowX: "auto", paddingBottom: 8 }}>
             {CATEGORIES.map((cat) => (
-              <button key={cat.slug} onClick={() => setSelectedCategory(cat.slug)} className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition ${selectedCategory === cat.slug ? "bg-white text-black" : "bg-white/5 text-gray-400 hover:bg-white/10"}`}>
+              <button key={cat.slug} onClick={() => setSelectedCategory(cat.slug)} style={{ padding: "8px 16px", borderRadius: 20, fontSize: 14, fontWeight: 600, whiteSpace: "nowrap", border: "none", cursor: "pointer", background: selectedCategory === cat.slug ? "#fff" : "rgba(255,255,255,0.05)", color: selectedCategory === cat.slug ? "#000" : "rgba(255,255,255,0.5)" }}>
                 {cat.name}
               </button>
             ))}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {/* Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 16 }}>
             {filtered.map((skit) => (
-              <div key={skit.id} className="skit-card group" onClick={() => setPlayingSkit(skit)}>
-                <div className="relative rounded-2xl overflow-hidden bg-[#141414] border border-white/5" style={{ aspectRatio: "9/14" }}>
-                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: `linear-gradient(135deg, rgba(139,92,246,0.15), rgba(236,72,153,0.15))` }}>
-                    <span className="text-5xl">{skit.emoji}</span>
+              <div key={skit.id} onClick={() => setPlayingSkit(skit)} style={{ cursor: "pointer", transition: "transform 0.2s" }}>
+                <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", background: "#141414", border: "1px solid rgba(255,255,255,0.05)", aspectRatio: "9/14" }}>
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(236,72,153,0.15))" }}>
+                    <span style={{ fontSize: 48 }}>{skit.emoji}</span>
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl" style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)" }}>▶</div>
+                  {/* Play icon on hover */}
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.2s" }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = "1"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = "0"; }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 24, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #8b5cf6, #ec4899)", color: "#fff", fontSize: 20 }}>▶</div>
                   </div>
+                  {/* Premium badge */}
                   {skit.isPremium && (
-                    <div className="absolute top-2 right-2"><span className="tag tag-pink text-[9px]">👑 PRO</span></div>
+                    <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(236,72,153,0.9)", padding: "2px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, color: "#fff" }}>👑 PRO</div>
                   )}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 pt-8">
-                    <p className="text-xs font-semibold leading-tight line-clamp-2">{skit.title}</p>
-                    <p className="text-[10px] text-gray-400 mt-1">{skit.creator}</p>
+                  {/* Title overlay */}
+                  <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)", padding: "32px 12px 12px" }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{skit.title}</p>
+                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>{skit.creator}</p>
                   </div>
                 </div>
               </div>
@@ -272,46 +259,52 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Skit Player Overlay */}
-      {playingSkit && <SkitPlayer skit={playingSkit} onClose={() => setPlayingSkit(null)} />}
-
       {/* Pricing */}
-      <section id="pricing" className="py-20 px-6 bg-[#0d0d0d]">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-black mb-2">Choose Your <span className="gradient-text">Plan</span></h2>
-          <p className="text-gray-500 mb-10">Start free. Go Pro when you're hooked.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            <div className="card text-left">
-              <h3 className="text-lg font-bold mb-1">Free</h3>
-              <p className="text-gray-500 text-sm mb-4">Taste the AI magic</p>
-              <div className="mb-4"><span className="text-4xl font-black gradient-text">$0</span><span className="text-gray-500 text-sm">/forever</span></div>
-              <ul className="space-y-2 mb-6">
+      <section id="pricing" style={{ padding: "80px 24px", background: "#0d0d0d" }}>
+        <div style={{ maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
+          <h2 style={{ fontSize: 32, fontWeight: 900, marginBottom: 8 }}>Choose Your <span style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Plan</span></h2>
+          <p style={{ color: "rgba(255,255,255,0.5)", marginBottom: 40 }}>Start free. Go Pro when you&apos;re hooked.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            {/* Free */}
+            <div style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 20, padding: 28, textAlign: "left" }}>
+              <h3 style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>Free</h3>
+              <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, marginBottom: 16 }}>Taste the AI magic</p>
+              <p style={{ fontSize: 36, fontWeight: 900, background: "linear-gradient(135deg, #8b5cf6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 16 }}>$0<span style={{ fontSize: 14, WebkitTextFillColor: "rgba(255,255,255,0.5)", fontWeight: 400 }}>/forever</span></p>
+              <ul style={{ listStyle: "none", marginBottom: 24 }}>
                 {["Watch free skits", "Browse all categories", "Like & share", "5 skits/day limit"].map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-gray-400"><span className="text-purple-400">✓</span>{f}</li>
+                  <li key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}><span style={{ color: "#8b5cf6" }}>✓</span>{f}</li>
                 ))}
               </ul>
-              <Link href="/register" className="btn-soft w-full block text-center">Get Started</Link>
+              <Link href="/register" style={{ display: "block", textAlign: "center", padding: "10px 20px", borderRadius: 12, fontSize: 14, fontWeight: 600, background: "rgba(139,92,246,0.1)", color: "#8b5cf6", border: "1px solid rgba(139,92,246,0.2)", textDecoration: "none" }}>Get Started</Link>
             </div>
-            <div className="card text-left !border-purple-500/50 relative" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.05), rgba(236,72,153,0.05))" }}>
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)" }}>7 Days Free</div>
-              <h3 className="text-lg font-bold mb-1">Pro</h3>
-              <p className="text-gray-500 text-sm mb-4">Unlimited AI entertainment</p>
-              <div className="mb-4"><span className="text-4xl font-black gradient-text">$4.99</span><span className="text-gray-500 text-sm">/month</span></div>
-              <ul className="space-y-2 mb-6">
-                {["Unlimited skits", "All premium content 👑", "Early access releases", "Request custom skits", "No ads", "HD quality"].map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-gray-400"><span className="text-purple-400">✓</span>{f}</li>
+            {/* Pro */}
+            <div style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.05), rgba(236,72,153,0.05))", border: "1px solid rgba(139,92,246,0.3)", borderRadius: 20, padding: 28, textAlign: "left", position: "relative" }}>
+              <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", padding: "4px 16px", borderRadius: 20, fontSize: 12, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #8b5cf6, #ec4899)" }}>7 Days Free</div>
+              <h3 style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>Pro</h3>
+              <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, marginBottom: 16 }}>Unlimited AI entertainment</p>
+              <p style={{ fontSize: 36, fontWeight: 900, background: "linear-gradient(135deg, #8b5cf6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: 16 }}>$4.99<span style={{ fontSize: 14, WebkitTextFillColor: "rgba(255,255,255,0.5)", fontWeight: 400 }}>/month</span></p>
+              <ul style={{ listStyle: "none", marginBottom: 24 }}>
+                {["Unlimited skits", "All premium content 👑", "Early access", "Custom requests", "No ads", "HD quality"].map((f, i) => (
+                  <li key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}><span style={{ color: "#8b5cf6" }}>✓</span>{f}</li>
                 ))}
               </ul>
-              <Link href="/register" className="btn-brand w-full block text-center">Start Free Trial</Link>
+              <Link href="/register" style={{ display: "block", textAlign: "center", padding: "10px 20px", borderRadius: 12, fontSize: 14, fontWeight: 600, background: "linear-gradient(135deg, #8b5cf6, #ec4899)", color: "#fff", textDecoration: "none" }}>Start Free Trial</Link>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t border-white/5 text-center">
-        <p className="text-sm text-gray-600">© 2026 ShortReels by Hyversa Pty Ltd</p>
+      <footer style={{ padding: "40px 24px", borderTop: "1px solid rgba(255,255,255,0.05)", textAlign: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 900, background: "linear-gradient(135deg, #8b5cf6, #ec4899)", color: "#fff" }}>S</div>
+          <span style={{ fontWeight: 700, background: "linear-gradient(135deg, #8b5cf6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>ShortReels</span>
+        </div>
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.3)" }}>© 2026 ShortReels by Hyversa Pty Ltd</p>
       </footer>
+
+      {/* Player overlay */}
+      {playingSkit && <SkitPlayer skit={playingSkit} onClose={() => setPlayingSkit(null)} />}
     </div>
   );
 }
