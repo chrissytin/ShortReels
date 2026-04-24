@@ -12,21 +12,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "priceId and email are required" }, { status: 400 });
     }
 
-    // Dynamic import to avoid build-time issues
-    const Stripe = (await import("stripe")).default;
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2023-10-16" });
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (!secretKey) {
+      return NextResponse.json({ error: "Stripe not configured" }, { status: 500 });
+    }
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      payment_method_types: ["card"],
-      customer_email: email,
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${process.env.NEXTAUTH_URL}/dashboard?upgraded=true`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/pricing`,
-      metadata: { userId: userId || "" },
+    // Use fetch directly instead of the Stripe SDK to avoid build issues
+    const session = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        mode: "subscription",
+        "payment_method_types[0]": "card",
+        customer_email: email,
+        "line_items[0][price]": priceId,
+        "line_items[0][quantity]": "1",
+        success_url: `${process.env.NEXTAUTH_URL || "https://shortreels-xi.vercel.app"}/dashboard?upgraded=true`,
+        cancel_url: `${process.env.NEXTAUTH_URL || "https://shortreels-xi.vercel.app"}/pricing`,
+      }),
     });
 
-    return NextResponse.json({ url: session.url });
+    const data = await session.json();
+    return NextResponse.json({ url: data.url });
   } catch (error: any) {
     console.error("Stripe checkout error:", error.message);
     return NextResponse.json({ error: error.message || "Checkout failed" }, { status: 500 });
