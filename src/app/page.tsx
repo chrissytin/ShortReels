@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 
-// Demo skits data
 const DEMO_SKITS = [
   { id: "1", title: "When the WiFi drops during a Zoom meeting", category: "comedy", creator: "AI Comedy Lab", duration: 28, views: 12400, likes: 890, isPremium: false, thumb: "🤣" },
   { id: "2", title: "POV: You're the last slice of pizza", category: "comedy", creator: "SkitBot", duration: 22, views: 28300, likes: 2100, isPremium: false, thumb: "🍕" },
@@ -18,7 +17,7 @@ const DEMO_SKITS = [
 ];
 
 const CATEGORIES = [
-  { slug: "all", name: "🔥 All", },
+  { slug: "all", name: "🔥 All" },
   { slug: "comedy", name: "😂 Comedy" },
   { slug: "relatable", name: "🤷 Relatable" },
   { slug: "animals", name: "🐾 Animals" },
@@ -28,7 +27,7 @@ const CATEGORIES = [
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [playingId, setPlayingId] = useState<string | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const filtered = selectedCategory === "all" ? DEMO_SKITS : DEMO_SKITS.filter((s) => s.category === selectedCategory);
 
@@ -82,7 +81,6 @@ export default function Home() {
       {/* Feed */}
       <section id="feed" className="px-6 pb-20">
         <div className="max-w-6xl mx-auto">
-          {/* Categories */}
           <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
             {CATEGORIES.map((cat) => (
               <button key={cat.slug} onClick={() => setSelectedCategory(cat.slug)} className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition ${selectedCategory === cat.slug ? "bg-white text-black" : "bg-white/5 text-gray-400 hover:bg-white/10"}`}>
@@ -91,41 +89,29 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Skit Grid — TikTok-style vertical cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {filtered.map((skit) => (
-              <div key={skit.id} className="skit-card group" onClick={() => setPlayingId(playingId === skit.id ? null : skit.id)}>
+              <div key={skit.id} className="skit-card group" onClick={() => skit.isPremium ? setShowPaywall(true) : null}>
                 <div className="relative rounded-2xl overflow-hidden bg-[#141414] border border-white/5" style={{ aspectRatio: "9/14" }}>
-                  {/* Thumbnail */}
                   <div className="absolute inset-0 flex items-center justify-center" style={{ background: `linear-gradient(135deg, rgba(139,92,246,0.15), rgba(236,72,153,0.15))` }}>
                     <span className="text-5xl">{skit.thumb}</span>
                   </div>
-
-                  {/* Play overlay */}
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition">
                     <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl" style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)" }}>▶</div>
                   </div>
-
-                  {/* Premium badge */}
                   {skit.isPremium && (
                     <div className="absolute top-2 right-2">
                       <span className="tag tag-pink text-[9px]">👑 PRO</span>
                     </div>
                   )}
-
-                  {/* Duration */}
                   <div className="absolute bottom-2 right-2 bg-black/60 px-1.5 py-0.5 rounded text-[10px] font-medium">
                     0:{skit.duration.toString().padStart(2, "0")}
                   </div>
-
-                  {/* Bottom gradient + info */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 pt-8">
                     <p className="text-xs font-semibold leading-tight line-clamp-2">{skit.title}</p>
                     <p className="text-[10px] text-gray-400 mt-1">{skit.creator}</p>
                   </div>
                 </div>
-
-                {/* Stats below card */}
                 <div className="flex items-center gap-3 mt-2 px-1">
                   <span className="text-[10px] text-gray-500">❤️ {skit.likes >= 1000 ? `${(skit.likes/1000).toFixed(1)}k` : skit.likes}</span>
                   <span className="text-[10px] text-gray-500">👁️ {skit.views >= 1000 ? `${(skit.views/1000).toFixed(1)}k` : skit.views}</span>
@@ -133,18 +119,25 @@ export default function Home() {
               </div>
             ))}
           </div>
-
-          {/* Unlock more CTA */}
-          <div className="mt-12 text-center">
-            <div className="inline-block card !p-8 text-center max-w-md">
-              <span className="text-3xl mb-3 block">👑</span>
-              <h3 className="text-xl font-bold mb-2">Unlock Premium Skits</h3>
-              <p className="text-sm text-gray-400 mb-4">Get unlimited access to all premium AI skits, early releases, and custom requests.</p>
-              <Link href="/register" className="btn-brand !rounded-full !px-8">Upgrade to Pro — $4.99/mo</Link>
-            </div>
-          </div>
         </div>
       </section>
+
+      {/* Paywall Modal */}
+      {showPaywall && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6" onClick={() => setShowPaywall(false)}>
+          <div className="bg-[#141414] rounded-3xl p-8 max-w-md w-full border border-white/10 text-center" onClick={(e) => e.stopPropagation()}>
+            <span className="text-5xl block mb-4">👑</span>
+            <h2 className="text-2xl font-black mb-2">Unlock Premium</h2>
+            <p className="text-gray-400 mb-6">This skit is for Pro members only. Get unlimited access to all premium content.</p>
+            <div className="bg-[#0a0a0a] rounded-2xl p-4 mb-6">
+              <p className="text-3xl font-black gradient-text">$4.99<span className="text-sm text-gray-500 font-normal">/month</span></p>
+              <p className="text-xs text-gray-500 mt-1">Cancel anytime</p>
+            </div>
+            <button onClick={() => { setShowPaywall(false); }} className="btn-brand w-full !rounded-full !py-3 !text-base mb-3">Start 7-Day Free Trial</button>
+            <button onClick={() => setShowPaywall(false)} className="text-sm text-gray-500 hover:text-gray-300 transition">Maybe later</button>
+          </div>
+        </div>
+      )}
 
       {/* Pricing */}
       <section id="pricing" className="py-20 px-6 bg-[#0d0d0d]">
@@ -164,18 +157,19 @@ export default function Home() {
               <Link href="/register" className="btn-soft w-full block text-center">Get Started</Link>
             </div>
             <div className="card text-left !border-purple-500/50 relative" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.05), rgba(236,72,153,0.05))" }}>
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)" }}>Most Popular</div>
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)" }}>7 Days Free</div>
               <h3 className="text-lg font-bold mb-1">Pro</h3>
               <p className="text-gray-500 text-sm mb-4">Unlimited AI entertainment</p>
               <div className="mb-4"><span className="text-4xl font-black gradient-text">$4.99</span><span className="text-gray-500 text-sm">/month</span></div>
               <ul className="space-y-2 mb-6">
-                {["Unlimited skits", "All premium content", "Early access releases", "Request custom skits", "No ads", "HD quality"].map((f, i) => (
+                {["Unlimited skits", "All premium content 👑", "Early access releases", "Request custom skits", "No ads", "HD quality"].map((f, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-gray-400"><span className="text-purple-400">✓</span>{f}</li>
                 ))}
               </ul>
-              <Link href="/register" className="btn-brand w-full block text-center">Start Pro Trial</Link>
+              <Link href="/register" className="btn-brand w-full block text-center">Start Free Trial</Link>
             </div>
           </div>
+          <p className="text-xs text-gray-600 mt-6">All plans include secure payment via Stripe. Cancel anytime from your account.</p>
         </div>
       </section>
 
@@ -194,7 +188,8 @@ export default function Home() {
           <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-black" style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)" }}>S</div>
           <span className="font-bold gradient-text">ShortReels</span>
         </div>
-        <p className="text-sm text-gray-600">© 2026 ShortReels. All rights reserved.</p>
+        <p className="text-sm text-gray-600 mb-2">© 2026 ShortReels. All rights reserved.</p>
+        <p className="text-xs text-gray-700">By Hyversa Pty Ltd</p>
       </footer>
     </div>
   );

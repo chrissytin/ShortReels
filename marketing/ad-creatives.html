@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: #111; display: flex; gap: 20px; padding: 20px; flex-wrap: wrap; justify-content: center; }
+.ad { width: 1080px; height: 1080px; position: relative; overflow: hidden; }
+.ad1 { background: linear-gradient(135deg, #0a0a0a, #1a1035); }
+.ad2 { background: linear-gradient(135deg, #8b5cf6, #ec4899); }
+.ad3 { background: #0a0a0a; }
+.ad4 { background: linear-gradient(135deg, #1a1035, #0a0a0a); }
+
+.phone { position: absolute; width: 320px; height: 580px; background: #0a0a0a; border-radius: 40px; border: 3px solid #333; overflow: hidden; }
+.phone-header { background: linear-gradient(135deg, #8b5cf6, #ec4899); padding: 20px; text-align: center; }
+.phone-header h3 { color: white; font-size: 18px; font-weight: 800; }
+.phone-header p { color: rgba(255,255,255,0.7); font-size: 12px; }
+
+.skit-thumb { background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(236,72,153,0.2)); border-radius: 12px; margin: 8px; padding: 20px; text-align: center; }
+.skit-thumb .emoji { font-size: 40px; }
+.skit-thumb .title { color: white; font-size: 12px; font-weight: 600; margin-top: 8px; }
+
+h1 { color: white; font-size: 64px; font-weight: 900; line-height: 1.1; }
+h2 { color: white; font-size: 48px; font-weight: 800; }
+p { color: rgba(255,255,255,0.7); font-size: 24px; }
+.cta { background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; padding: 16px 40px; border-radius: 50px; font-size: 24px; font-weight: 700; display: inline-block; }
+.review { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; margin: 8px; }
+.review .stars { color: #fbbf24; font-size: 20px; }
+.review .text { color: white; font-size: 14px; margin-top: 8px; }
+.review .author { color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- Ad 1: Hero Hook -->
+<div class="ad ad1" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px;">
+  <div style="font-size:120px;margin-bottom:30px;">🤣</div>
+  <h1>AI Skits You <span style="background:linear-gradient(135deg,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Can't Stop</span> Watching</h1>
+  <p style="margin:30px 0 40px;max-width:600px;">1000+ hilarious AI-generated short reels. New skits every day. Free to start.</p>
+  <div class="cta">Watch Now — It's Free</div>
+  <div style="display:flex;gap:40px;margin-top:50px;">
+    <span style="color:#888;font-size:20px;">🎬 1000+ skits</span>
+    <span style="color:#888;font-size:20px;">🤖 AI-generated</span>
+    <span style="color:#888;font-size:20px;">📱 Mobile-first</span>
+  </div>
+</div>
+
+<!-- Ad 2: Gradient CTA -->
+<div class="ad ad2" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px;">
+  <div style="font-size:100px;margin-bottom:40px;">😂🤖🎬</div>
+  <h2 style="color:white;font-size:56px;line-height:1.2;">Skits so funny,<br/>you'll forget they're AI</h2>
+  <p style="color:rgba(255,255,255,0.8);margin:30px 0 40px;font-size:28px;">The Karen vs self-checkout. Cat at 3am. WiFi drops mid-Zoom.</p>
+  <div style="background:white;color:#8b5cf6;padding:18px 50px;border-radius:50px;font-size:26px;font-weight:800;">Get ShortReels Free</div>
+  <p style="color:rgba(255,255,255,0.6);margin-top:20px;font-size:18px;">10,000+ people already watching</p>
+</div>
+
+<!-- Ad 3: Social Proof -->
+<div class="ad ad3" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px;">
+  <div style="font-size:80px;margin-bottom:20px;">⭐⭐⭐⭐⭐</div>
+  <h1 style="font-size:52px;margin-bottom:40px;">"I spent 2 hours<br/>watching AI skits last night 😂"</h1>
+  <div style="display:flex;gap:12px;margin-bottom:50px;">
+    <div class="review" style="width:300px;text-align:left;"><div class="stars">⭐⭐⭐⭐⭐</div><div class="text">"Better than TikTok. The AI skits are unreal"</div><div class="author">— Sarah M.</div></div>
+    <div class="review" style="width:300px;text-align:left;"><div class="stars">⭐⭐⭐⭐⭐</div><div class="text">"Me and my friends can't stop sending these to each other"</div><div class="author">— James K.</div></div>
+  </div>
+  <div class="cta">Download Free</div>
+</div>
+
+<!-- Ad 4: Premium Upsell -->
+<div class="ad ad4" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px;">
+  <div style="font-size:100px;margin-bottom:30px;">👑</div>
+  <h1 style="font-size:52px;">Unlock 500+<br/><span style="background:linear-gradient(135deg,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Premium Skits</span></h1>
+  <p style="margin:30px 0 20px;max-width:500px;">Early access. Custom requests. No ads. HD quality.</p>
+  <div style="font-size:72px;font-weight:900;margin:20px 0;">$4.99<span style="font-size:28px;color:#888;font-weight:400;">/month</span></div>
+  <div class="cta">Start Pro Trial</div>
+  <p style="color:#555;margin-top:20px;font-size:16px;">Cancel anytime. No commitment.</p>
+</div>
+
+</body>
+</html>
